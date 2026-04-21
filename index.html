@@ -23,6 +23,17 @@
   details summary::-webkit-details-marker { display: none; }
   .scroll-box { max-height: 75vh; overflow-y: auto; }
 </style>
+<script>
+(function(){
+  var KEY = "123456";
+  var OK = 'aleabit_ok_' + KEY.length;
+  if (sessionStorage.getItem(OK) === '1') return;
+  var ans = prompt('请输入访问密码：');
+  if (ans === KEY) { sessionStorage.setItem(OK, '1'); return; }
+  if (window.stop) window.stop();
+  document.documentElement.innerHTML = '<head><meta charset="UTF-8"><title>访问受限</title></head><body style="font-family:-apple-system,sans-serif;text-align:center;padding:80px 20px;color:#555;background:#f9fafb"><h2 style="margin-bottom:8px">访问受限</h2><p>请联系页面所有者获取密码，然后刷新本页</p></body>';
+})();
+</script>
 </head>
 <body class="bg-gray-50 text-gray-900">
 
