@@ -220,10 +220,11 @@ const regions = [...new Set(TICKERS.map(t => t.region))].sort();
 const regionSel = document.getElementById('region-filter');
 regions.forEach(r => { const o = document.createElement('option'); o.value = r; o.textContent = r; regionSel.appendChild(o); });
 
-function stageBadge(stage, label) {
+function stageBadge(stage, label, firstDate) {
   if (!stage) return '<span class="stage-badge stage-none">未识别</span>';
   const num = stage.split('_')[0];
-  return `<span class="stage-badge stage-${num}">${label || stage}</span>`;
+  const dateStr = firstDate ? ` · 起 ${firstDate.slice(5)}` : '';
+  return `<span class="stage-badge stage-${num}">${label || stage}${dateStr}</span>`;
 }
 
 function lifecycleTimeline(lc) {
@@ -250,7 +251,7 @@ function lifecycleTimeline(lc) {
       <thead><tr class="text-gray-500"><th class="text-left pr-2">阶段</th><th class="pr-2">命中</th><th class="pr-2">首现</th><th class="pr-2">最近</th></tr></thead>
       <tbody>${rows}</tbody>
     </table>
-    <div class="text-xs text-gray-600 mt-2">活跃 ${lc.days_active ?? '?'} 天，共 ${lc.post_count} 条相关帖。当前阶段：${stageBadge(lc.current_stage, lc.current_stage_label)}</div>
+    <div class="text-xs text-gray-600 mt-2">活跃 ${lc.days_active ?? '?'} 天，共 ${lc.post_count} 条相关帖。当前阶段：${stageBadge(lc.current_stage, lc.current_stage_label, lc.stage_hits?.[lc.current_stage]?.first_date)}</div>
   </div>`;
 }
 
@@ -292,7 +293,7 @@ function renderTickers() {
     const posts = POSTS.filter(p => (p.tickers_us || []).includes(t.ticker) || (p.tickers_asian || []).includes(t.ticker));
     const lcTL = lifecycleTimeline(t.lifecycle);
     const detail = lcTL + posts.map(postCard).join('');
-    const stageCell = stageBadge(t.lifecycle?.current_stage, t.lifecycle?.current_stage_label);
+    const stageCell = stageBadge(t.lifecycle?.current_stage, t.lifecycle?.current_stage_label, t.lifecycle?.stage_hits?.[t.lifecycle?.current_stage]?.first_date);
     const tr = document.createElement('tr');
     tr.className = 'border-t hover:bg-gray-50 cursor-pointer';
     tr.innerHTML = `
@@ -325,7 +326,7 @@ function renderTWSE() {
   const nonUS = TICKERS.filter(t => t.region && !t.region.includes('美股'));
   rows.innerHTML = nonUS.map(t => {
     const posts = POSTS.filter(p => (p.tickers_us || []).includes(t.ticker) || (p.tickers_asian || []).includes(t.ticker));
-    const stage = stageBadge(t.lifecycle?.current_stage, t.lifecycle?.current_stage_label);
+    const stage = stageBadge(t.lifecycle?.current_stage, t.lifecycle?.current_stage_label, t.lifecycle?.stage_hits?.[t.lifecycle?.current_stage]?.first_date);
     return `<div class="border rounded p-3 bg-white">
       <div class="flex items-center justify-between">
         <div class="font-mono font-bold text-lg">${t.market === 'US' ? '$' + t.ticker : t.ticker}</div>
